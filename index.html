@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GTA 6</title>
+    <title>GTA 9</title>
     <style>
         body {
             margin: 0;
@@ -30,7 +30,9 @@
         }
 
         #gameCanvas {
-            background: linear-gradient(#87CEEB, #4682B4);
+            display: block;
+            width: 100%;
+            height: 100%;
         }
 
         #hud {
@@ -63,6 +65,20 @@
             text-shadow: 4px 4px 4px black;
             margin-bottom: 40px;
         }
+
+        #gameOver {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 3;
+        }
     </style>
 </head>
 <body>
@@ -77,6 +93,10 @@
             Здоровье: <span id="health">100</span> | 
             Патроны: <span id="ammo">20</span>
         </div>
+        <div id="gameOver">
+            <h2>GAME OVER</h2>
+            <button class="button" onclick="backToMenu()">Меню</button>
+        </div>
     </div>
 
     <script>
@@ -86,35 +106,36 @@
         const healthSpan = document.getElementById('health');
         const ammoSpan = document.getElementById('ammo');
         const menu = document.getElementById('menu');
-        let gameWidth = window.innerWidth;
-        let gameHeight = window.innerHeight;
-        
-        // Настройка canvas
-        canvas.width = gameWidth;
-        canvas.height = gameHeight;
-        gameContainer.appendChild(canvas);
-
-        // Игровые переменные
-        let player = {};
-        let bullets = [];
-        let enemies = [];
-        let items = [];
-        let keys = {};
+        const gameOverDiv = document.getElementById('gameOver');
         let animationFrame;
 
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        // Инициализация игры
         function startGame() {
             menu.style.display = 'none';
             gameContainer.style.display = 'block';
+            gameOverDiv.style.display = 'none';
+            resizeCanvas();
             initGame();
             gameLoop();
         }
 
+        function backToMenu() {
+            gameContainer.style.display = 'none';
+            menu.style.display = 'flex';
+            cancelAnimationFrame(animationFrame);
+        }
+
         function initGame() {
             player = {
-                x: gameWidth/2,
-                y: gameHeight/2,
+                x: canvas.width/2,
+                y: canvas.height/2,
                 size: 40,
-                speed: 8,
+                speed: 3,
                 health: 100,
                 ammo: 20,
                 angle: 0,
@@ -124,29 +145,28 @@
             bullets = [];
             enemies = [];
             items = [];
+            keys = {};
+            mouse = { x: 0, y: 0 };
             
-            // Создание врагов и предметов
             for(let i = 0; i < 7; i++) spawnEnemy();
             for(let i = 0; i < 5; i++) spawnItem();
         }
 
         function spawnEnemy() {
             enemies.push({
-                x: Math.random() * gameWidth,
-                y: Math.random() * gameHeight,
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
                 size: 35,
-                speed: 3,
+                speed: 1.5,
                 health: 100,
-                angle: 0,
-                lastUpdate: 0,
-                cooldown: 2000
+                angle: 0
             });
         }
 
         function spawnItem() {
             items.push({
-                x: Math.random() * (gameWidth - 30),
-                y: Math.random() * (gameHeight - 30),
+                x: Math.random() * (canvas.width - 30),
+                y: Math.random() * (canvas.height - 30),
                 type: Math.random() > 0.5 ? 'health' : 'ammo'
             });
         }
@@ -184,13 +204,11 @@
             ctx.translate(player.x + player.size/2, player.y + player.size/2);
             ctx.rotate(player.angle);
             
-            // Тело
             ctx.fillStyle = '#3498db';
             ctx.beginPath();
             ctx.arc(0, 0, player.size/2, 0, Math.PI * 2);
             ctx.fill();
             
-            // Ствол
             ctx.fillStyle = '#2c3e50';
             ctx.fillRect(player.size/4, -3, player.size/2, 6);
             
@@ -218,39 +236,30 @@
             ctx.restore();
         }
 
-        function drawPickupRadius() {
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-            ctx.setLineDash([5, 5]);
-            ctx.beginPath();
-            ctx.arc(
-                player.x + player.size/2,
-                player.y + player.size/2,
-                player.pickupRadius,
-                0,
-                Math.PI * 2
-            );
-            ctx.stroke();
-        }
-
         function gameLoop() {
             // Движение игрока
-            if(keys.w) player.y -= player.speed;
-            if(keys.a) { 
-                player.x -= player.speed;
-                player.angle = -Math.PI/2;
-            }
-            if(keys.s) player.y += player.speed;
-            if(keys.d) {
-                player.x += player.speed;
-                player.angle = Math.PI/2;
-            }
+            const newX = player.x + (keys.d ? player.speed : 0) - (keys.a ? player.speed : 0);
+            const newY = player.y + (keys.s ? player.speed : 0) - (keys.w ? player.speed : 0);
+            
+            player.x = Math.max(0, Math.min(canvas.width - player.size, newX));
+            player.y = Math.max(0, Math.min(canvas.height - player.size, newY));
+
+            // Поворот к курсору
+            const dx = mouse.x - (player.x + player.size/2);
+            const dy = mouse.y - (player.y + player.size/2);
+            player.angle = Math.atan2(dy, dx);
 
             // Обновление пуль
             bullets.forEach((bullet, index) => {
                 bullet.x += bullet.speedX;
                 bullet.y += bullet.speedY;
                 
-                // Проверка попадания во врагов
+                if(bullet.x < 0 || bullet.x > canvas.width || 
+                   bullet.y < 0 || bullet.y > canvas.height) {
+                    bullets.splice(index, 1);
+                    return;
+                }
+                
                 enemies.forEach((enemy, enemyIndex) => {
                     if(checkCollision(bullet, enemy)) {
                         enemies.splice(enemyIndex, 1);
@@ -270,7 +279,6 @@
                 enemy.x += (dx/distance) * enemy.speed;
                 enemy.y += (dy/distance) * enemy.speed;
 
-                // Проверка столкновения с игроком
                 if(checkCollision(player, enemy)) {
                     player.health -= 0.5;
                     healthSpan.textContent = Math.floor(player.health);
@@ -280,37 +288,27 @@
             // Отрисовка
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Игрок
             drawPlayer();
-            
-            // Враги
             enemies.forEach(drawEnemy);
             
-            // Пули
             ctx.fillStyle = 'black';
             bullets.forEach(bullet => {
                 ctx.fillRect(bullet.x, bullet.y, 5, 5);
             });
             
-            // Предметы
             items.forEach(item => {
                 ctx.fillStyle = item.type === 'health' ? '#2ecc71' : '#f1c40f';
                 ctx.beginPath();
                 ctx.arc(item.x + 15, item.y + 15, 15, 0, Math.PI * 2);
                 ctx.fill();
             });
-            
-            drawPickupRadius();
 
-            // Проверка смерти
             if(player.health <= 0) {
                 cancelAnimationFrame(animationFrame);
-                alert('Game Over!');
-                menu.style.display = 'flex';
-                gameContainer.style.display = 'none';
+                gameOverDiv.style.display = 'block';
+            } else {
+                animationFrame = requestAnimationFrame(gameLoop);
             }
-
-            animationFrame = requestAnimationFrame(gameLoop);
         }
 
         // Обработчики событий
@@ -346,11 +344,32 @@
             }
         });
 
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = e.clientY - rect.top;
+        });
+
+        canvas.addEventListener('click', () => {
+            if(player.ammo > 0) {
+                player.ammo--;
+                ammoSpan.textContent = player.ammo;
+                bullets.push({
+                    x: player.x + player.size/2,
+                    y: player.y + player.size/2,
+                    speedX: Math.cos(player.angle) * 10,
+                    speedY: Math.sin(player.angle) * 10,
+                    size: 5
+                });
+            }
+        });
+
         window.addEventListener('resize', () => {
-            gameWidth = window.innerWidth;
-            gameHeight = window.innerHeight;
-            canvas.width = gameWidth;
-            canvas.height = gameHeight;
+            resizeCanvas();
+            if(player) {
+                player.x = Math.min(player.x, canvas.width - player.size);
+                player.y = Math.min(player.y, canvas.height - player.size);
+            }
         });
     </script>
 </body>
