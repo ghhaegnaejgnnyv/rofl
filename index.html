@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GTA 6</title>
+    <title>GTA 52</title>
     <style>
         body {
             margin: 0;
@@ -104,17 +104,36 @@
             text-align: center;
             z-index: 3;
         }
+
+        .music-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .music-button {
+            padding: 10px 20px;
+            background: #3498db;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <audio id="backgroundMusic" loop>
         <source src="gta.mp3" type="audio/mpeg">
-        Ваш браузер не поддерживает аудио элемент.
     </audio>
 
     <div id="menu">
         <h1 class="title">GTA 6</h1>
         <button class="button" onclick="startGame()">Играть</button>
+        <div class="music-buttons">
+            <button class="music-button" onclick="changeMusic('mamont.mp3')">Мамонт</button>
+            <button class="music-button" onclick="changeMusic('gta.mp3')">Нига</button>
+            <button class="music-button" onclick="changeMusic('san.mp3')">Сан Андреас</button>
+        </div>
     </div>
 
     <div id="gameContainer">
@@ -124,8 +143,8 @@
             Патроны: <span id="ammo">20</span>
         </div>
         <div class="boss-health" id="bossHealth">Босс: <span id="bossHp">40</span></div>
-        <div id="killCounter">Убийств: 0</div>
-        <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="0.5">
+        <div id="killCounter">Убийств: 0<br>Боссов: 0</div>
+        <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="0.2">
         <div id="gameOver">
             <h2>GAME OVER</h2>
             <button class="button" onclick="backToMenu()">Меню</button>
@@ -148,11 +167,22 @@
         
         let animationFrame;
         let killCount = 0;
+        let bossesKilled = 0;
         let boss = null;
+        let bossSpawned = false;
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+        }
+
+        function changeMusic(song) {
+            backgroundMusic.pause();
+            backgroundMusic.src = song;
+            backgroundMusic.load();
+            if(gameContainer.style.display === 'block') {
+                backgroundMusic.play();
+            }
         }
 
         function startGame() {
@@ -190,9 +220,11 @@
             keys = {};
             mouse = { x: 0, y: 0 };
             killCount = 0;
+            bossesKilled = 0;
             boss = null;
+            bossSpawned = false;
             
-            killCounter.textContent = `Убийств: ${killCount}`;
+            killCounter.innerHTML = `Убийств: ${killCount}<br>Боссов: ${bossesKilled}`;
             bossHealthDiv.style.display = 'none';
             
             for(let i = 0; i < 7; i++) spawnEnemy();
@@ -211,6 +243,7 @@
         }
 
         function spawnBoss() {
+            bossSpawned = true;
             boss = {
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
@@ -339,7 +372,7 @@
                         bullets.splice(index, 1);
                         
                         killCount++;
-                        killCounter.textContent = `Убийств: ${killCount}`;
+                        killCounter.innerHTML = `Убийств: ${killCount}<br>Боссов: ${bossesKilled}`;
                         
                         if(killCount % 20 === 0) {
                             spawnEnemy();
@@ -355,10 +388,11 @@
                     bossHpSpan.textContent = boss.health;
                     
                     if(boss.health <= 0) {
+                        bossesKilled++;
                         boss = null;
+                        bossSpawned = false;
                         bossHealthDiv.style.display = 'none';
-                        killCount += 10;
-                        killCounter.textContent = `Убийств: ${killCount}`;
+                        killCounter.innerHTML = `Убийств: ${killCount}<br>Боссов: ${bossesKilled}`;
                     }
                 }
             });
@@ -378,7 +412,7 @@
                 }
             });
 
-            if(killCount >= 50 && !boss) {
+            if(killCount >= 50 && !boss && !bossSpawned) {
                 spawnBoss();
             }
 
