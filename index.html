@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GTA 6</title>
+    <title>GTA 7</title>
     <style>
         body {
             margin: 0;
@@ -164,6 +164,44 @@
             66% { background: #0000ff; }
             100% { background: #ff0000; }
         }
+
+        .controls-info {
+            position: fixed;
+            bottom: 120px;
+            left: 20px;
+            color: white;
+            font-size: 18px;
+            text-shadow: 2px 2px 2px black;
+        }
+
+        .volume-label {
+            position: fixed;
+            bottom: 110px;
+            right: 20px;
+            color: white;
+            font-size: 18px;
+            text-shadow: 2px 2px 2px black;
+        }
+
+        @keyframes ammoBlink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes healthPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .low-ammo {
+            animation: ammoBlink 1s infinite;
+        }
+
+        .low-health {
+            animation: healthPulse 1s infinite;
+        }
     </style>
 </head>
 <body>
@@ -195,6 +233,12 @@
         <div class="boss-health" id="bossHealth">Босс: <span id="bossHp">40</span></div>
         <div id="killCounter">Убийств: 0<br>Боссов: 0</div>
         <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="0.2">
+        <div class="controls-info">
+            Движение: WASD<br>
+            Стрельба: ЛКМ/Пробел<br>
+            Подбор: E
+        </div>
+        <div class="volume-label">Громкость звука</div>
         <div id="gameOver">
             <h2>GAME OVER</h2>
             <button class="button" onclick="backToMenu()">Меню</button>
@@ -227,6 +271,7 @@
         let currentDifficulty = 'easy';
         let selectedMusic = 'gta.mp3';
         let enemyAI = 'simple';
+        let flankPositions = [];
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -459,30 +504,87 @@
             ctx.restore();
         }
 
+        function calculateFlankPositions() {
+            const directions = [
+                { angle: 0, distance: 150 },    // Спереди
+                { angle: Math.PI/2, distance: 150 },  // Справа
+                { angle: -Math.PI/2, distance: 150 }, // Слева
+                { angle: Math.PI, distance: 100 }     // Сзади
+            ];
+
+            flankPositions = directions.map(d => ({
+                x: player.x + Math.cos(player.angle + d.angle) * d.distance,
+                y: player.y + Math.sin(player.angle + d.angle) * d.distance
+            }));
+        }
+
         function updateEnemyAI(enemy) {
             if(enemyAI === 'smart') {
-                const angleToPlayer = Math.atan2(
-                    player.y - enemy.y,
-                    player.x - enemy.x
+                const toPlayer = {
+                    x: player.x - enemy.x,
+                    y: player.y - enemy.y
+                };
+                const distanceToPlayer = Math.hypot(toPlayer.x, toPlayer.y);
+                const playerSpeed = Math.hypot(
+                    keys.d ? player.speed : keys.a ? -player.speed : 0,
+                    keys.w ? -player.speed : keys.s ? player.speed : 0
                 );
-                
-                const deviation = Math.PI / 4 * (Math.random() - 0.5);
-                const moveAngle = angleToPlayer + deviation;
-                
-                enemy.x += Math.cos(moveAngle) * enemy.speed;
-                enemy.y += Math.sin(moveAngle) * enemy.speed;
 
-                const distanceToPlayer = Math.hypot(
-                    player.x - enemy.x,
-                    player.y - enemy.y
-                );
+                const predictedPosition = {
+                    x: player.x + (player.x - enemy.x) * 0.5,
+                    y: player.y + (player.y - enemy.y) * 0.5
+                };
+
+                calculateFlankPositions();
+                const targetPositions = [...flankPositions, predictedPosition];
                 
-                if(distanceToPlayer < 200) {
-                    const circleAngle = angleToPlayer + Math.PI/2;
-                    enemy.x += Math.cos(circleAngle) * enemy.speed * 0.5;
-                    enemy.y += Math.sin(circleAngle) * enemy.speed * 0.5;
+                const enemiesCount = enemies.map(e => {
+                    const dx = e.x - enemy.x;
+                    const dy = e.y - enemy.y;
+                    return Math.hypot(dx, dy) < 100 ? 1 : 0;
+                }).reduce((a, b) => a + b, 0);
+
+                let targetIndex = Math.floor(Math.random() * targetPositions.length);
+                if(enemiesCount > 2) {
+                    targetIndex = (targetIndex + 1) % targetPositions.length;
                 }
+
+                const target = targetPositions[targetIndex];
+                const toTarget = {
+                    x: target.x - enemy.x,
+                    y: target.y - enemy.y
+                const targetDistance = Math.hypot(toTarget.x, toTarget.y);
+
+                // Комбинированное движение
+                const approachFactor = 0.8;
+                const flankFactor = 0.4;
+                
+                const baseAngle = Math.atan2(toTarget.y, toTarget.x);
+                const flankAngle = baseAngle + (Math.PI/2) * (Math.random() - 0.5);
+                
+                enemy.angle = baseAngle + (flankAngle * flankFactor);
+                
+                // Динамическая скорость
+                const speedMultiplier = distanceToPlayer > 300 ? 1.2 : 0.8;
+                enemy.x += Math.cos(enemy.angle) * enemy.speed * speedMultiplier * approachFactor;
+                enemy.y += Math.sin(enemy.angle) * enemy.speed * speedMultiplier * approachFactor;
+
+                // Тактическое отступление при низком здоровье игрока
+                if(player.health < 30 && distanceToPlayer < 200) {
+                    const retreatAngle = Math.atan2(-toPlayer.y, -toPlayer.x);
+                    enemy.x += Math.cos(retreatAngle) * enemy.speed * 0.5;
+                    enemy.y += Math.sin(retreatAngle) * enemy.speed * 0.5;
+                }
+
+                // Координация атак при групповом окружении
+                if(enemiesCount > 3) {
+                    const surroundAngle = Math.atan2(toPlayer.y, toPlayer.x) + Math.PI/2;
+                    enemy.x += Math.cos(surroundAngle) * enemy.speed * 0.6;
+                    enemy.y += Math.sin(surroundAngle) * enemy.speed * 0.6;
+                }
+
             } else {
+                // Стандартный ИИ остается без изменений
                 const dx = player.x - enemy.x;
                 const dy = player.y - enemy.y;
                 const distance = Math.sqrt(dx*dx + dy*dy);
@@ -537,15 +639,15 @@
                     
                     if(boss.health <= 0) {
                         bossesKilled++;
-                        boss = null;
-                        bossSpawned = false;
-                        bossHealthDiv.style.display = 'none';
-                        killCounter.innerHTML = `Убийств: ${killCount}<br>Боссов: ${bossesKilled}`;
                         powerupStar = {
                             x: boss.x,
                             y: boss.y,
                             size: 30
                         };
+                        boss = null;
+                        bossSpawned = false;
+                        bossHealthDiv.style.display = 'none';
+                        killCounter.innerHTML = `Убийств: ${killCount}<br>Боссов: ${bossesKilled}`;
                     }
                 }
             });
@@ -665,7 +767,9 @@
         }
 
         volumeControl.addEventListener('input', (e) => {
-            backgroundMusic.volume = e.target.value;
+            const volume = parseFloat(e.target.value);
+            backgroundMusic.volume = volume;
+            volumeControl.value = volume.toFixed(1);
         });
 
         document.addEventListener('keydown', (e) => {
