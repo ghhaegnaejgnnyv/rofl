@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fппscreen Website</title>
+    <title>Fullscreen Website</title>
     <style>
         body {
             margin: 0;
@@ -12,81 +12,88 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f0f0f0;
+            background-color: #1a1a1a;
+            color: white;
             font-family: Arial, sans-serif;
-            cursor: pointer; /* Показываем, что страницу можно кликнуть */
-        }
-        h1 {
-            font-size: 2.5rem;
-            color: #333;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <h1>Click to Enter Fullscreen</h1>
+    <h1>Fullscreen Mode</h1>
 
     <script>
+        let isFullscreenForced = true;
+        let wPressed = false;
+
+        // Автоматический полноэкранный режим через 0.3 секунды
+        setTimeout(() => {
+            if (!document.fullscreenElement) {
+                enterFullscreen().catch(error => {
+                    console.log('Fullscreen request failed:', error);
+                });
+            }
+        }, 300);
+
         // Функция для включения полноэкранного режима
-        function enterFullscreen() {
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen();
-            } else if (document.documentElement.mozRequestFullScreen) { // Firefox
-                document.documentElement.mozRequestFullScreen();
-            } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari, Opera
-                document.documentElement.webkitRequestFullscreen();
-            } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
-                document.documentElement.msRequestFullscreen();
+        async function enterFullscreen() {
+            try {
+                if (document.documentElement.requestFullscreen) {
+                    await document.documentElement.requestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) {
+                    await document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    await document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    await document.documentElement.msRequestFullscreen();
+                }
+                isFullscreenForced = true;
+            } catch (error) {
+                console.error('Fullscreen error:', error);
             }
         }
 
-        // Функция для выхода из полноэкранного режима
-        function exitFullscreen() {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.mozCancelFullScreen) { // Firefox
-                document.mozCancelFullScreen();
-            } else if (document.webkitExitFullscreen) { // Chrome, Safari, Opera
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) { // IE/Edge
-                document.msExitFullscreen();
-            }
-        }
-
-        // Обработчик события для возврата в полноэкранный режим при выходе
+        // Обработчик выхода из полноэкранного режима
         function handleFullscreenChange() {
-            if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
-                enterFullscreen(); // Возвращаемся в полноэкранный режим
+            if (!document.fullscreenElement && isFullscreenForced) {
+                enterFullscreen();
             }
         }
 
-        // Добавляем обработчики событий для всех браузеров
+        // Обработчики событий для всех браузеров
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         document.addEventListener('mozfullscreenchange', handleFullscreenChange);
         document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
         document.addEventListener('msfullscreenchange', handleFullscreenChange);
 
-        // Обработчик события для выхода из полноэкранного режима при нажатии w + f
-        let wPressed = false;
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'w' || event.key === 'ц') {
-                wPressed = true;
-            }
-            if ((event.key === 'f' || event.key === 'а') && wPressed) {
+        // Обработчик клавиш W + F
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'w' || e.key === 'ц') wPressed = true;
+            if ((e.key === 'f' || e.key === 'а') && wPressed) {
+                isFullscreenForced = false;
                 exitFullscreen();
-                wPressed = false; // Сбрасываем состояние
             }
         });
 
-        document.addEventListener('keyup', (event) => {
-            if (event.key === 'w' || event.key === 'ц') {
-                wPressed = false; // Сбрасываем состояние при отпускании клавиши
-            }
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'w' || e.key === 'ц') wPressed = false;
         });
 
-        // Включаем полноэкранный режим после клика по странице
-        document.body.addEventListener('click', () => {
-            enterFullscreen();
-        });
+        // Функция выхода
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+
+        // Резервный метод: клик для полноэкранного режима
+        document.body.addEventListener('click', enterFullscreen);
     </script>
 </body>
 </html>
