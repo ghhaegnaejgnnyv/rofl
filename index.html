@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GTA 52</title>
+    <title>GTA 6</title>
     <style>
         body {
             margin: 0;
@@ -118,6 +118,51 @@
             color: white;
             border-radius: 5px;
             cursor: pointer;
+            position: relative;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .difficulty-button {
+            padding: 10px 20px;
+            background: #2ecc71;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .difficulty-button.active::after,
+        .music-button.active::after {
+            content: '✓';
+            position: absolute;
+            right: 5px;
+            top: 2px;
+            font-size: 14px;
+        }
+
+        .powerup-star {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: gold;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+
+        .rgb-boss {
+            animation: rgbAnimation 2s infinite;
+        }
+
+        @keyframes rgbAnimation {
+            0% { background: #ff0000; }
+            33% { background: #00ff00; }
+            66% { background: #0000ff; }
+            100% { background: #ff0000; }
         }
     </style>
 </head>
@@ -128,10 +173,15 @@
 
     <div id="menu">
         <h1 class="title">GTA 6</h1>
+        <div class="difficulty-buttons">
+            <button class="difficulty-button active" onclick="selectDifficulty('easy')">Лёгкий</button>
+            <button class="difficulty-button" onclick="selectDifficulty('normal')">Нормальный</button>
+            <button class="difficulty-button" onclick="selectDifficulty('cyborg')">Киборг</button>
+        </div>
         <button class="button" onclick="startGame()">Играть</button>
         <div class="music-buttons">
             <button class="music-button" onclick="changeMusic('mamont.mp3')">Мамонт</button>
-            <button class="music-button" onclick="changeMusic('gta.mp3')">Нига</button>
+            <button class="music-button active" onclick="changeMusic('gta.mp3')">Нига</button>
             <button class="music-button" onclick="changeMusic('san.mp3')">Сан Андреас</button>
         </div>
     </div>
@@ -170,19 +220,40 @@
         let bossesKilled = 0;
         let boss = null;
         let bossSpawned = false;
+        let powerupActive = false;
+        let rgbBoss = null;
+        let powerupStar = null;
+        let lastShotTime = 0;
+        let currentDifficulty = 'easy';
+        let selectedMusic = 'gta.mp3';
+        let enemyAI = 'simple';
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
 
+        function selectDifficulty(difficulty) {
+            currentDifficulty = difficulty;
+            document.querySelectorAll('.difficulty-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            enemyAI = difficulty === 'cyborg' ? 'smart' : 'simple';
+        }
+
         function changeMusic(song) {
+            selectedMusic = song;
             backgroundMusic.pause();
             backgroundMusic.src = song;
             backgroundMusic.load();
             if(gameContainer.style.display === 'block') {
                 backgroundMusic.play();
             }
+            document.querySelectorAll('.music-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
         }
 
         function startGame() {
@@ -223,12 +294,34 @@
             bossesKilled = 0;
             boss = null;
             bossSpawned = false;
+            powerupActive = false;
+            rgbBoss = null;
+            powerupStar = null;
             
             killCounter.innerHTML = `Убийств: ${killCount}<br>Боссов: ${bossesKilled}`;
             bossHealthDiv.style.display = 'none';
             
-            for(let i = 0; i < 7; i++) spawnEnemy();
-            for(let i = 0; i < 5; i++) spawnItem();
+            const baseEnemies = 7;
+            const baseItems = 5;
+            let enemyCount, itemCount;
+            
+            switch(currentDifficulty) {
+                case 'easy':
+                    enemyCount = Math.floor(baseEnemies / 2);
+                    itemCount = baseItems * 2;
+                    break;
+                case 'normal':
+                    enemyCount = baseEnemies;
+                    itemCount = baseItems;
+                    break;
+                case 'cyborg':
+                    enemyCount = baseEnemies;
+                    itemCount = baseItems;
+                    break;
+            }
+
+            for(let i = 0; i < enemyCount; i++) spawnEnemy();
+            for(let i = 0; i < itemCount; i++) spawnItem();
         }
 
         function spawnEnemy() {
@@ -254,6 +347,18 @@
             };
             bossHpSpan.textContent = boss.health;
             bossHealthDiv.style.display = 'block';
+        }
+
+        function spawnRgbBoss() {
+            rgbBoss = {
+                x: canvas.width/2,
+                y: canvas.height/2,
+                width: 175,
+                height: 175,
+                speed: 0.5,
+                health: 100,
+                lastShot: 0
+            };
         }
 
         function spawnItem() {
@@ -345,6 +450,49 @@
             ctx.restore();
         }
 
+        function drawRgbBoss() {
+            ctx.save();
+            ctx.fillStyle = '#ff0000';
+            ctx.beginPath();
+            ctx.rect(rgbBoss.x, rgbBoss.y, rgbBoss.width, rgbBoss.height);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function updateEnemyAI(enemy) {
+            if(enemyAI === 'smart') {
+                const angleToPlayer = Math.atan2(
+                    player.y - enemy.y,
+                    player.x - enemy.x
+                );
+                
+                const deviation = Math.PI / 4 * (Math.random() - 0.5);
+                const moveAngle = angleToPlayer + deviation;
+                
+                enemy.x += Math.cos(moveAngle) * enemy.speed;
+                enemy.y += Math.sin(moveAngle) * enemy.speed;
+
+                const distanceToPlayer = Math.hypot(
+                    player.x - enemy.x,
+                    player.y - enemy.y
+                );
+                
+                if(distanceToPlayer < 200) {
+                    const circleAngle = angleToPlayer + Math.PI/2;
+                    enemy.x += Math.cos(circleAngle) * enemy.speed * 0.5;
+                    enemy.y += Math.sin(circleAngle) * enemy.speed * 0.5;
+                }
+            } else {
+                const dx = player.x - enemy.x;
+                const dy = player.y - enemy.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                enemy.angle = Math.atan2(dy, dx);
+                enemy.x += (dx/distance) * enemy.speed;
+                enemy.y += (dy/distance) * enemy.speed;
+            }
+        }
+
         function gameLoop() {
             const newX = player.x + (keys.d ? player.speed : 0) - (keys.a ? player.speed : 0);
             const newY = player.y + (keys.s ? player.speed : 0) - (keys.w ? player.speed : 0);
@@ -393,19 +541,17 @@
                         bossSpawned = false;
                         bossHealthDiv.style.display = 'none';
                         killCounter.innerHTML = `Убийств: ${killCount}<br>Боссов: ${bossesKilled}`;
+                        powerupStar = {
+                            x: boss.x,
+                            y: boss.y,
+                            size: 30
+                        };
                     }
                 }
             });
 
             enemies.forEach(enemy => {
-                const dx = player.x - enemy.x;
-                const dy = player.y - enemy.y;
-                const distance = Math.sqrt(dx*dx + dy*dy);
-                
-                enemy.angle = Math.atan2(dy, dx);
-                enemy.x += (dx/distance) * enemy.speed;
-                enemy.y += (dy/distance) * enemy.speed;
-
+                updateEnemyAI(enemy);
                 if(checkCollision(player, enemy)) {
                     player.health -= 0.5;
                     healthSpan.textContent = Math.floor(player.health);
@@ -431,15 +577,68 @@
                 }
             }
 
+            if(powerupStar) {
+                const dx = powerupStar.x - player.x;
+                const dy = powerupStar.y - player.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                if(distance < player.pickupRadius) {
+                    powerupActive = true;
+                    powerupStar = null;
+                    setTimeout(() => {
+                        powerupActive = false;
+                    }, 10000);
+                }
+            }
+
+            if(rgbBoss) {
+                const dx = player.x - rgbBoss.x;
+                const dy = player.y - rgbBoss.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                rgbBoss.x += (dx/distance) * rgbBoss.speed;
+                rgbBoss.y += (dy/distance) * rgbBoss.speed;
+
+                const now = Date.now();
+                if(now - rgbBoss.lastShot > 4000) {
+                    rgbBoss.lastShot = now;
+                    const angle = Math.atan2(
+                        player.y + player.size/2 - rgbBoss.y,
+                        player.x + player.size/2 - rgbBoss.x
+                    );
+                    
+                    bullets.push({
+                        x: rgbBoss.x + rgbBoss.width/2,
+                        y: rgbBoss.y + rgbBoss.height/2,
+                        speedX: Math.cos(angle) * 3,
+                        speedY: Math.sin(angle) * 3,
+                        size: 10,
+                        color: '#ff0000',
+                        enemyBullet: true
+                    });
+                }
+
+                if(checkCollision(player, rgbBoss)) {
+                    player.health -= 2;
+                    healthSpan.textContent = Math.floor(player.health);
+                }
+            }
+
+            if(killCount >= 250 && !rgbBoss) {
+                spawnRgbBoss();
+            }
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             drawPlayer();
             enemies.forEach(drawEnemy);
             if(boss) drawBoss();
+            if(rgbBoss) drawRgbBoss();
             
             ctx.fillStyle = 'black';
             bullets.forEach(bullet => {
-                ctx.fillRect(bullet.x, bullet.y, 5, 5);
+                ctx.fillStyle = bullet.color || 'black';
+                ctx.fillRect(bullet.x, bullet.y, bullet.size, bullet.size);
             });
             
             items.forEach(item => {
@@ -448,6 +647,13 @@
                 ctx.arc(item.x + 15, item.y + 15, 15, 0, Math.PI * 2);
                 ctx.fill();
             });
+
+            if(powerupStar) {
+                ctx.fillStyle = 'gold';
+                ctx.beginPath();
+                ctx.arc(powerupStar.x + 15, powerupStar.y + 15, 15, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
             if(player.health <= 0) {
                 cancelAnimationFrame(animationFrame);
@@ -470,15 +676,19 @@
                 case 'KeyD': keys.d = true; break;
                 case 'Space': 
                     if(player.ammo > 0) {
-                        player.ammo--;
-                        ammoSpan.textContent = player.ammo;
-                        bullets.push({
-                            x: player.x + player.size/2,
-                            y: player.y + player.size/2,
-                            speedX: Math.cos(player.angle) * 10,
-                            speedY: Math.sin(player.angle) * 10,
-                            size: 5
-                        });
+                        if(powerupActive) {
+                            shootTriple();
+                        } else {
+                            player.ammo--;
+                            ammoSpan.textContent = player.ammo;
+                            bullets.push({
+                                x: player.x + player.size/2,
+                                y: player.y + player.size/2,
+                                speedX: Math.cos(player.angle) * 10,
+                                speedY: Math.sin(player.angle) * 10,
+                                size: 5
+                            });
+                        }
                     }
                     break;
                 case 'KeyE': handlePickup(); break;
@@ -502,17 +712,44 @@
 
         canvas.addEventListener('click', () => {
             if(player.ammo > 0) {
-                player.ammo--;
-                ammoSpan.textContent = player.ammo;
-                bullets.push({
-                    x: player.x + player.size/2,
-                    y: player.y + player.size/2,
-                    speedX: Math.cos(player.angle) * 10,
-                    speedY: Math.sin(player.angle) * 10,
-                    size: 5
-                });
+                if(powerupActive) {
+                    shootTriple();
+                } else {
+                    player.ammo--;
+                    ammoSpan.textContent = player.ammo;
+                    bullets.push({
+                        x: player.x + player.size/2,
+                        y: player.y + player.size/2,
+                        speedX: Math.cos(player.angle) * 10,
+                        speedY: Math.sin(player.angle) * 10,
+                        size: 5
+                    });
+                }
             }
         });
+
+        function shootTriple() {
+            if(player.ammo > 0) {
+                player.ammo--;
+                ammoSpan.textContent = player.ammo;
+                
+                const angles = [
+                    player.angle - Math.PI/8,
+                    player.angle,
+                    player.angle + Math.PI/8
+                ];
+                
+                angles.forEach(angle => {
+                    bullets.push({
+                        x: player.x + player.size/2,
+                        y: player.y + player.size/2,
+                        speedX: Math.cos(angle) * 10,
+                        speedY: Math.sin(angle) * 10,
+                        size: 5
+                    });
+                });
+            }
+        }
 
         window.addEventListener('resize', () => {
             resizeCanvas();
