@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fullscreen Website</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Fullscreen Mode</h1>
+
+    <script>
+        // Функция для включения полноэкранного режима
+        function enterFullscreen() {
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+            } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+                document.documentElement.mozRequestFullScreen();
+            } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari, Opera
+                document.documentElement.webkitRequestFullscreen();
+            } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+                document.documentElement.msRequestFullscreen();
+            }
+        }
+
+        // Функция для выхода из полноэкранного режима
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) { // Firefox
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) { // Chrome, Safari, Opera
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { // IE/Edge
+                document.msExitFullscreen();
+            }
+        }
+
+        // Обработчик события для возврата в полноэкранный режим при выходе
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                enterFullscreen();
+            }
+        });
+
+        document.addEventListener('mozfullscreenchange', () => {
+            if (!document.mozFullScreenElement) {
+                enterFullscreen();
+            }
+        });
+
+        document.addEventListener('webkitfullscreenchange', () => {
+            if (!document.webkitFullscreenElement) {
+                enterFullscreen();
+            }
+        });
+
+        document.addEventListener('msfullscreenchange', () => {
+            if (!document.msFullscreenElement) {
+                enterFullscreen();
+            }
+        });
+
+        // Обработчик события для выхода из полноэкранного режима при нажатии w + f
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'w' || event.key === 'ц') {
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'f' || e.key === 'а') {
+                        exitFullscreen();
+                    }
+                });
+            }
+        });
+
+        // Включаем полноэкранный режим при загрузке страницы
+        window.onload = enterFullscreen;
+    </script>
+</body>
+</html>
