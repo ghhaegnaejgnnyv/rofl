@@ -3,97 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fullscreen Website</title>
+    <title>Fфullscreen Control</title>
     <style>
         body {
             margin: 0;
             padding: 0;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            background-color: #1a1a1a;
+            background: #000;
             color: white;
-            font-family: Arial, sans-serif;
+            font-family: Arial;
             cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <h1>Fullscreen Mode</h1>
+    <h1>Fullscreen Mode Active</h1>
 
     <script>
-        let isFullscreenForced = true;
+        let isLocked = true;
         let wPressed = false;
 
-        // Автоматический полноэкранный режим через 0.3 секунды
-        setTimeout(() => {
-            if (!document.fullscreenElement) {
-                enterFullscreen().catch(error => {
-                    console.log('Fullscreen request failed:', error);
-                });
-            }
-        }, 300);
+        // Автоматический запрос полноэкранного режима
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                requestFullscreenWithFallback();
+            }, 300);
+        });
 
-        // Функция для включения полноэкранного режима
-        async function enterFullscreen() {
-            try {
-                if (document.documentElement.requestFullscreen) {
-                    await document.documentElement.requestFullscreen();
-                } else if (document.documentElement.mozRequestFullScreen) {
-                    await document.documentElement.mozRequestFullScreen();
-                } else if (document.documentElement.webkitRequestFullscreen) {
-                    await document.documentElement.webkitRequestFullscreen();
-                } else if (document.documentElement.msRequestFullscreen) {
-                    await document.documentElement.msRequestFullscreen();
-                }
-                isFullscreenForced = true;
-            } catch (error) {
-                console.error('Fullscreen error:', error);
+        // Универсальный обработчик полноэкранного режима
+        function requestFullscreenWithFallback() {
+            const elem = document.documentElement;
+            
+            const fullscreenPromise = elem.requestFullscreen?.() ||
+                elem.mozRequestFullScreen?.() || 
+                elem.webkitRequestFullscreen?.() ||
+                elem.msRequestFullscreen?.();
+
+            if (fullscreenPromise) {
+                fullscreenPromise.catch(error => {
+                    console.log('Auto-fullscreen failed, waiting for user interaction');
+                });
             }
         }
 
         // Обработчик выхода из полноэкранного режима
         function handleFullscreenChange() {
-            if (!document.fullscreenElement && isFullscreenForced) {
-                enterFullscreen();
+            if (isLocked && !document.fullscreenElement) {
+                document.addEventListener('click', requestFullscreenWithFallback, {once: true});
             }
         }
 
-        // Обработчики событий для всех браузеров
+        // Обработчики событий
         document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.addEventListener('msfullscreenchange', handleFullscreenChange);
-
-        // Обработчик клавиш W + F
-        document.addEventListener('keydown', (e) => {
+        document.addEventListener('keydown', e => {
+            // Обработка Esc
+            if (e.key === 'Escape' && isLocked) {
+                e.preventDefault();
+                requestFullscreenWithFallback();
+            }
+            
+            // Обработка W+F
             if (e.key === 'w' || e.key === 'ц') wPressed = true;
             if ((e.key === 'f' || e.key === 'а') && wPressed) {
-                isFullscreenForced = false;
-                exitFullscreen();
+                isLocked = false;
+                document.exitFullscreen?.();
             }
         });
 
-        document.addEventListener('keyup', (e) => {
+        document.addEventListener('keyup', e => {
             if (e.key === 'w' || e.key === 'ц') wPressed = false;
         });
 
-        // Функция выхода
-        function exitFullscreen() {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.mozCancelFullScreen) {
-                document.mozCancelFullScreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) {
-                document.msExitFullscreen();
-            }
-        }
-
-        // Резервный метод: клик для полноэкранного режима
-        document.body.addEventListener('click', enterFullscreen);
+        // Ручной запуск по клику
+        document.body.addEventListener('click', requestFullscreenWithFallback);
     </script>
 </body>
 </html>
