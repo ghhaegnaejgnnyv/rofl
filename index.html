@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GTA 6</title>
+    <title>GTA 42</title>
     <style>
-        /* Все стили остаются как в предыдущей версии */
         body {
             margin: 0;
             overflow: hidden;
@@ -38,6 +37,15 @@
             position: fixed;
             top: 20px;
             left: 20px;
+            color: white;
+            font-size: 24px;
+            text-shadow: 2px 2px 2px black;
+        }
+
+        #killCounter {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
             color: white;
             font-size: 24px;
             text-shadow: 2px 2px 2px black;
@@ -87,12 +95,12 @@
     </div>
 
     <div id="gameContainer">
-        <!-- Исправлено: используем существующий canvas -->
         <canvas id="gameCanvas"></canvas>
         <div id="hud">
             Здоровье: <span id="health">100</span> | 
             Патроны: <span id="ammo">20</span>
         </div>
+        <div id="killCounter">Убийств: 0</div>
         <div id="gameOver">
             <h2>GAME OVER</h2>
             <button class="button" onclick="backToMenu()">Меню</button>
@@ -100,18 +108,18 @@
     </div>
 
     <script>
-        // Исправлено: получаем ссылку на существующий canvas
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const gameContainer = document.getElementById('gameContainer');
         const healthSpan = document.getElementById('health');
         const ammoSpan = document.getElementById('ammo');
+        const killCounter = document.getElementById('killCounter');
         const menu = document.getElementById('menu');
         const gameOverDiv = document.getElementById('gameOver');
         let animationFrame;
+        let killCount = 0;
 
         function resizeCanvas() {
-            // Устанавливаем правильные размеры canvas
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
@@ -125,7 +133,6 @@
             gameLoop();
         }
 
-        // Остальной код остается без изменений
         function backToMenu() {
             gameContainer.style.display = 'none';
             menu.style.display = 'flex';
@@ -149,6 +156,8 @@
             items = [];
             keys = {};
             mouse = { x: 0, y: 0 };
+            killCount = 0;
+            killCounter.textContent = `Убийств: ${killCount}`;
             
             for(let i = 0; i < 7; i++) spawnEnemy();
             for(let i = 0; i < 5; i++) spawnItem();
@@ -239,19 +248,16 @@
         }
 
         function gameLoop() {
-            // Движение игрока
             const newX = player.x + (keys.d ? player.speed : 0) - (keys.a ? player.speed : 0);
             const newY = player.y + (keys.s ? player.speed : 0) - (keys.w ? player.speed : 0);
             
             player.x = Math.max(0, Math.min(canvas.width - player.size, newX));
             player.y = Math.max(0, Math.min(canvas.height - player.size, newY));
 
-            // Поворот к курсору
             const dx = mouse.x - (player.x + player.size/2);
             const dy = mouse.y - (player.y + player.size/2);
             player.angle = Math.atan2(dy, dx);
 
-            // Обновление пуль
             bullets.forEach((bullet, index) => {
                 bullet.x += bullet.speedX;
                 bullet.y += bullet.speedY;
@@ -266,12 +272,19 @@
                     if(checkCollision(bullet, enemy)) {
                         enemies.splice(enemyIndex, 1);
                         bullets.splice(index, 1);
+                        
+                        killCount++;
+                        killCounter.textContent = `Убийств: ${killCount}`;
+                        
+                        if(killCount % 20 === 0) {
+                            spawnEnemy();
+                        }
+                        
                         spawnEnemy();
                     }
                 });
             });
 
-            // Движение врагов
             enemies.forEach(enemy => {
                 const dx = player.x - enemy.x;
                 const dy = player.y - enemy.y;
@@ -287,7 +300,6 @@
                 }
             });
 
-            // Отрисовка
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             drawPlayer();
@@ -313,7 +325,6 @@
             }
         }
 
-        // Обработчики событий
         document.addEventListener('keydown', (e) => {
             switch(e.code) {
                 case 'KeyW': keys.w = true; break;
@@ -374,7 +385,6 @@
             }
         });
 
-        // Инициализация canvas при первой загрузке
         resizeCanvas();
     </script>
 </body>
