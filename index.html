@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GTA 42</title>
+    <title>GTA 6</title>
     <style>
         body {
             margin: 0;
@@ -51,6 +51,24 @@
             text-shadow: 2px 2px 2px black;
         }
 
+        #volumeControl {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 120px;
+            z-index: 4;
+        }
+
+        .boss-health {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: red;
+            font-size: 24px;
+            text-shadow: 2px 2px 2px black;
+            display: none;
+        }
+
         .button {
             padding: 15px 30px;
             font-size: 24px;
@@ -89,6 +107,11 @@
     </style>
 </head>
 <body>
+    <audio id="backgroundMusic" loop>
+        <source src="gta.mp3" type="audio/mpeg">
+        Ваш браузер не поддерживает аудио элемент.
+    </audio>
+
     <div id="menu">
         <h1 class="title">GTA 6</h1>
         <button class="button" onclick="startGame()">Играть</button>
@@ -100,7 +123,9 @@
             Здоровье: <span id="health">100</span> | 
             Патроны: <span id="ammo">20</span>
         </div>
+        <div class="boss-health" id="bossHealth">Босс: <span id="bossHp">40</span></div>
         <div id="killCounter">Убийств: 0</div>
+        <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="0.5">
         <div id="gameOver">
             <h2>GAME OVER</h2>
             <button class="button" onclick="backToMenu()">Меню</button>
@@ -116,8 +141,14 @@
         const killCounter = document.getElementById('killCounter');
         const menu = document.getElementById('menu');
         const gameOverDiv = document.getElementById('gameOver');
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        const volumeControl = document.getElementById('volumeControl');
+        const bossHealthDiv = document.getElementById('bossHealth');
+        const bossHpSpan = document.getElementById('bossHp');
+        
         let animationFrame;
         let killCount = 0;
+        let boss = null;
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -130,6 +161,7 @@
             gameOverDiv.style.display = 'none';
             resizeCanvas();
             initGame();
+            backgroundMusic.play();
             gameLoop();
         }
 
@@ -137,6 +169,7 @@
             gameContainer.style.display = 'none';
             menu.style.display = 'flex';
             cancelAnimationFrame(animationFrame);
+            backgroundMusic.pause();
         }
 
         function initGame() {
@@ -157,7 +190,10 @@
             keys = {};
             mouse = { x: 0, y: 0 };
             killCount = 0;
+            boss = null;
+            
             killCounter.textContent = `Убийств: ${killCount}`;
+            bossHealthDiv.style.display = 'none';
             
             for(let i = 0; i < 7; i++) spawnEnemy();
             for(let i = 0; i < 5; i++) spawnItem();
@@ -172,6 +208,19 @@
                 health: 100,
                 angle: 0
             });
+        }
+
+        function spawnBoss() {
+            boss = {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: 70,
+                speed: 1.0,
+                health: 40,
+                angle: 0
+            };
+            bossHpSpan.textContent = boss.health;
+            bossHealthDiv.style.display = 'block';
         }
 
         function spawnItem() {
@@ -247,6 +296,22 @@
             ctx.restore();
         }
 
+        function drawBoss() {
+            ctx.save();
+            ctx.translate(boss.x + boss.size/2, boss.y + boss.size/2);
+            ctx.rotate(boss.angle);
+            
+            ctx.fillStyle = '#ff0000';
+            ctx.beginPath();
+            ctx.moveTo(0, -boss.size/2);
+            ctx.lineTo(boss.size/2, boss.size/2);
+            ctx.lineTo(-boss.size/2, boss.size/2);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.restore();
+        }
+
         function gameLoop() {
             const newX = player.x + (keys.d ? player.speed : 0) - (keys.a ? player.speed : 0);
             const newY = player.y + (keys.s ? player.speed : 0) - (keys.w ? player.speed : 0);
@@ -283,6 +348,19 @@
                         spawnEnemy();
                     }
                 });
+
+                if(boss && checkCollision(bullet, boss)) {
+                    bullets.splice(index, 1);
+                    boss.health--;
+                    bossHpSpan.textContent = boss.health;
+                    
+                    if(boss.health <= 0) {
+                        boss = null;
+                        bossHealthDiv.style.display = 'none';
+                        killCount += 10;
+                        killCounter.textContent = `Убийств: ${killCount}`;
+                    }
+                }
             });
 
             enemies.forEach(enemy => {
@@ -300,10 +378,30 @@
                 }
             });
 
+            if(killCount >= 50 && !boss) {
+                spawnBoss();
+            }
+
+            if(boss) {
+                const dx = player.x - boss.x;
+                const dy = player.y - boss.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                boss.angle = Math.atan2(dy, dx);
+                boss.x += (dx/distance) * boss.speed;
+                boss.y += (dy/distance) * boss.speed;
+
+                if(checkCollision(player, boss)) {
+                    player.health -= 1.5;
+                    healthSpan.textContent = Math.floor(player.health);
+                }
+            }
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             drawPlayer();
             enemies.forEach(drawEnemy);
+            if(boss) drawBoss();
             
             ctx.fillStyle = 'black';
             bullets.forEach(bullet => {
@@ -320,10 +418,15 @@
             if(player.health <= 0) {
                 cancelAnimationFrame(animationFrame);
                 gameOverDiv.style.display = 'block';
+                backgroundMusic.pause();
             } else {
                 animationFrame = requestAnimationFrame(gameLoop);
             }
         }
+
+        volumeControl.addEventListener('input', (e) => {
+            backgroundMusic.volume = e.target.value;
+        });
 
         document.addEventListener('keydown', (e) => {
             switch(e.code) {
