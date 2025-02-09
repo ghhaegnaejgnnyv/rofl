@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GTA 9</title>
+    <title>GTA 6</title>
     <style>
+        /* Все стили остаются как в предыдущей версии */
         body {
             margin: 0;
             overflow: hidden;
@@ -30,9 +31,7 @@
         }
 
         #gameCanvas {
-            display: block;
-            width: 100%;
-            height: 100%;
+            background: linear-gradient(#87CEEB, #4682B4);
         }
 
         #hud {
@@ -88,6 +87,7 @@
     </div>
 
     <div id="gameContainer">
+        <!-- Исправлено: используем существующий canvas -->
         <canvas id="gameCanvas"></canvas>
         <div id="hud">
             Здоровье: <span id="health">100</span> | 
@@ -100,7 +100,8 @@
     </div>
 
     <script>
-        const canvas = document.createElement('canvas');
+        // Исправлено: получаем ссылку на существующий canvas
+        const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const gameContainer = document.getElementById('gameContainer');
         const healthSpan = document.getElementById('health');
@@ -110,11 +111,11 @@
         let animationFrame;
 
         function resizeCanvas() {
+            // Устанавливаем правильные размеры canvas
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
 
-        // Инициализация игры
         function startGame() {
             menu.style.display = 'none';
             gameContainer.style.display = 'block';
@@ -124,6 +125,7 @@
             gameLoop();
         }
 
+        // Остальной код остается без изменений
         function backToMenu() {
             gameContainer.style.display = 'none';
             menu.style.display = 'flex';
@@ -371,6 +373,9 @@
                 player.y = Math.min(player.y, canvas.height - player.size);
             }
         });
+
+        // Инициализация canvas при первой загрузке
+        resizeCanvas();
     </script>
 </body>
 </html>
