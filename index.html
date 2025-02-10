@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GTA 7</title>
+    <title>GTA 6</title>
     <style>
         body {
             margin: 0;
@@ -118,89 +118,6 @@
             color: white;
             border-radius: 5px;
             cursor: pointer;
-            position: relative;
-        }
-
-        .difficulty-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .difficulty-button {
-            padding: 10px 20px;
-            background: #2ecc71;
-            border: none;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .difficulty-button.active::after,
-        .music-button.active::after {
-            content: '✓';
-            position: absolute;
-            right: 5px;
-            top: 2px;
-            font-size: 14px;
-        }
-
-        .powerup-star {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: gold;
-            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-        }
-
-        .rgb-boss {
-            animation: rgbAnimation 2s infinite;
-        }
-
-        @keyframes rgbAnimation {
-            0% { background: #ff0000; }
-            33% { background: #00ff00; }
-            66% { background: #0000ff; }
-            100% { background: #ff0000; }
-        }
-
-        .controls-info {
-            position: fixed;
-            bottom: 120px;
-            left: 20px;
-            color: white;
-            font-size: 18px;
-            text-shadow: 2px 2px 2px black;
-        }
-
-        .volume-label {
-            position: fixed;
-            bottom: 110px;
-            right: 20px;
-            color: white;
-            font-size: 18px;
-            text-shadow: 2px 2px 2px black;
-        }
-
-        @keyframes ammoBlink {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        @keyframes healthPulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-
-        .low-ammo {
-            animation: ammoBlink 1s infinite;
-        }
-
-        .low-health {
-            animation: healthPulse 1s infinite;
         }
     </style>
 </head>
@@ -211,15 +128,10 @@
 
     <div id="menu">
         <h1 class="title">GTA 6</h1>
-        <div class="difficulty-buttons">
-            <button class="difficulty-button active" onclick="selectDifficulty('easy')">Лёгкий</button>
-            <button class="difficulty-button" onclick="selectDifficulty('normal')">Нормальный</button>
-            <button class="difficulty-button" onclick="selectDifficulty('cyborg')">Киборг</button>
-        </div>
         <button class="button" onclick="startGame()">Играть</button>
         <div class="music-buttons">
             <button class="music-button" onclick="changeMusic('mamont.mp3')">Мамонт</button>
-            <button class="music-button active" onclick="changeMusic('gta.mp3')">Нига</button>
+            <button class="music-button" onclick="changeMusic('gta.mp3')">Нига</button>
             <button class="music-button" onclick="changeMusic('san.mp3')">Сан Андреас</button>
         </div>
     </div>
@@ -233,12 +145,6 @@
         <div class="boss-health" id="bossHealth">Босс: <span id="bossHp">40</span></div>
         <div id="killCounter">Убийств: 0<br>Боссов: 0</div>
         <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="0.2">
-        <div class="controls-info">
-            Движение: WASD<br>
-            Стрельба: ЛКМ/Пробел<br>
-            Подбор: E
-        </div>
-        <div class="volume-label">Громкость звука</div>
         <div id="gameOver">
             <h2>GAME OVER</h2>
             <button class="button" onclick="backToMenu()">Меню</button>
@@ -264,41 +170,19 @@
         let bossesKilled = 0;
         let boss = null;
         let bossSpawned = false;
-        let powerupActive = false;
-        let rgbBoss = null;
-        let powerupStar = null;
-        let lastShotTime = 0;
-        let currentDifficulty = 'easy';
-        let selectedMusic = 'gta.mp3';
-        let enemyAI = 'simple';
-        let flankPositions = [];
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
 
-        function selectDifficulty(difficulty) {
-            currentDifficulty = difficulty;
-            document.querySelectorAll('.difficulty-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            enemyAI = difficulty === 'cyborg' ? 'smart' : 'simple';
-        }
-
         function changeMusic(song) {
-            selectedMusic = song;
             backgroundMusic.pause();
             backgroundMusic.src = song;
             backgroundMusic.load();
             if(gameContainer.style.display === 'block') {
                 backgroundMusic.play();
             }
-            document.querySelectorAll('.music-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
         }
 
         function startGame() {
@@ -339,34 +223,12 @@
             bossesKilled = 0;
             boss = null;
             bossSpawned = false;
-            powerupActive = false;
-            rgbBoss = null;
-            powerupStar = null;
             
             killCounter.innerHTML = `Убийств: ${killCount}<br>Боссов: ${bossesKilled}`;
             bossHealthDiv.style.display = 'none';
             
-            const baseEnemies = 7;
-            const baseItems = 5;
-            let enemyCount, itemCount;
-            
-            switch(currentDifficulty) {
-                case 'easy':
-                    enemyCount = Math.floor(baseEnemies / 2);
-                    itemCount = baseItems * 2;
-                    break;
-                case 'normal':
-                    enemyCount = baseEnemies;
-                    itemCount = baseItems;
-                    break;
-                case 'cyborg':
-                    enemyCount = baseEnemies;
-                    itemCount = baseItems;
-                    break;
-            }
-
-            for(let i = 0; i < enemyCount; i++) spawnEnemy();
-            for(let i = 0; i < itemCount; i++) spawnItem();
+            for(let i = 0; i < 7; i++) spawnEnemy();
+            for(let i = 0; i < 5; i++) spawnItem();
         }
 
         function spawnEnemy() {
@@ -392,18 +254,6 @@
             };
             bossHpSpan.textContent = boss.health;
             bossHealthDiv.style.display = 'block';
-        }
-
-        function spawnRgbBoss() {
-            rgbBoss = {
-                x: canvas.width/2,
-                y: canvas.height/2,
-                width: 175,
-                height: 175,
-                speed: 0.5,
-                health: 100,
-                lastShot: 0
-            };
         }
 
         function spawnItem() {
@@ -495,106 +345,6 @@
             ctx.restore();
         }
 
-        function drawRgbBoss() {
-            ctx.save();
-            ctx.fillStyle = '#ff0000';
-            ctx.beginPath();
-            ctx.rect(rgbBoss.x, rgbBoss.y, rgbBoss.width, rgbBoss.height);
-            ctx.fill();
-            ctx.restore();
-        }
-
-        function calculateFlankPositions() {
-            const directions = [
-                { angle: 0, distance: 150 },    // Спереди
-                { angle: Math.PI/2, distance: 150 },  // Справа
-                { angle: -Math.PI/2, distance: 150 }, // Слева
-                { angle: Math.PI, distance: 100 }     // Сзади
-            ];
-
-            flankPositions = directions.map(d => ({
-                x: player.x + Math.cos(player.angle + d.angle) * d.distance,
-                y: player.y + Math.sin(player.angle + d.angle) * d.distance
-            }));
-        }
-
-        function updateEnemyAI(enemy) {
-            if(enemyAI === 'smart') {
-                const toPlayer = {
-                    x: player.x - enemy.x,
-                    y: player.y - enemy.y
-                };
-                const distanceToPlayer = Math.hypot(toPlayer.x, toPlayer.y);
-                const playerSpeed = Math.hypot(
-                    keys.d ? player.speed : keys.a ? -player.speed : 0,
-                    keys.w ? -player.speed : keys.s ? player.speed : 0
-                );
-
-                const predictedPosition = {
-                    x: player.x + (player.x - enemy.x) * 0.5,
-                    y: player.y + (player.y - enemy.y) * 0.5
-                };
-
-                calculateFlankPositions();
-                const targetPositions = [...flankPositions, predictedPosition];
-                
-                const enemiesCount = enemies.map(e => {
-                    const dx = e.x - enemy.x;
-                    const dy = e.y - enemy.y;
-                    return Math.hypot(dx, dy) < 100 ? 1 : 0;
-                }).reduce((a, b) => a + b, 0);
-
-                let targetIndex = Math.floor(Math.random() * targetPositions.length);
-                if(enemiesCount > 2) {
-                    targetIndex = (targetIndex + 1) % targetPositions.length;
-                }
-
-                const target = targetPositions[targetIndex];
-                const toTarget = {
-                    x: target.x - enemy.x,
-                    y: target.y - enemy.y
-                const targetDistance = Math.hypot(toTarget.x, toTarget.y);
-
-                // Комбинированное движение
-                const approachFactor = 0.8;
-                const flankFactor = 0.4;
-                
-                const baseAngle = Math.atan2(toTarget.y, toTarget.x);
-                const flankAngle = baseAngle + (Math.PI/2) * (Math.random() - 0.5);
-                
-                enemy.angle = baseAngle + (flankAngle * flankFactor);
-                
-                // Динамическая скорость
-                const speedMultiplier = distanceToPlayer > 300 ? 1.2 : 0.8;
-                enemy.x += Math.cos(enemy.angle) * enemy.speed * speedMultiplier * approachFactor;
-                enemy.y += Math.sin(enemy.angle) * enemy.speed * speedMultiplier * approachFactor;
-
-                // Тактическое отступление при низком здоровье игрока
-                if(player.health < 30 && distanceToPlayer < 200) {
-                    const retreatAngle = Math.atan2(-toPlayer.y, -toPlayer.x);
-                    enemy.x += Math.cos(retreatAngle) * enemy.speed * 0.5;
-                    enemy.y += Math.sin(retreatAngle) * enemy.speed * 0.5;
-                }
-
-                // Координация атак при групповом окружении
-                if(enemiesCount > 3) {
-                    const surroundAngle = Math.atan2(toPlayer.y, toPlayer.x) + Math.PI/2;
-                    enemy.x += Math.cos(surroundAngle) * enemy.speed * 0.6;
-                    enemy.y += Math.sin(surroundAngle) * enemy.speed * 0.6;
-                }
-
-            } else {
-                // Стандартный ИИ остается без изменений
-                const dx = player.x - enemy.x;
-                const dy = player.y - enemy.y;
-                const distance = Math.sqrt(dx*dx + dy*dy);
-                
-                enemy.angle = Math.atan2(dy, dx);
-                enemy.x += (dx/distance) * enemy.speed;
-                enemy.y += (dy/distance) * enemy.speed;
-            }
-        }
-
         function gameLoop() {
             const newX = player.x + (keys.d ? player.speed : 0) - (keys.a ? player.speed : 0);
             const newY = player.y + (keys.s ? player.speed : 0) - (keys.w ? player.speed : 0);
@@ -639,11 +389,6 @@
                     
                     if(boss.health <= 0) {
                         bossesKilled++;
-                        powerupStar = {
-                            x: boss.x,
-                            y: boss.y,
-                            size: 30
-                        };
                         boss = null;
                         bossSpawned = false;
                         bossHealthDiv.style.display = 'none';
@@ -653,7 +398,14 @@
             });
 
             enemies.forEach(enemy => {
-                updateEnemyAI(enemy);
+                const dx = player.x - enemy.x;
+                const dy = player.y - enemy.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                enemy.angle = Math.atan2(dy, dx);
+                enemy.x += (dx/distance) * enemy.speed;
+                enemy.y += (dy/distance) * enemy.speed;
+
                 if(checkCollision(player, enemy)) {
                     player.health -= 0.5;
                     healthSpan.textContent = Math.floor(player.health);
@@ -679,68 +431,15 @@
                 }
             }
 
-            if(powerupStar) {
-                const dx = powerupStar.x - player.x;
-                const dy = powerupStar.y - player.y;
-                const distance = Math.sqrt(dx*dx + dy*dy);
-                
-                if(distance < player.pickupRadius) {
-                    powerupActive = true;
-                    powerupStar = null;
-                    setTimeout(() => {
-                        powerupActive = false;
-                    }, 10000);
-                }
-            }
-
-            if(rgbBoss) {
-                const dx = player.x - rgbBoss.x;
-                const dy = player.y - rgbBoss.y;
-                const distance = Math.sqrt(dx*dx + dy*dy);
-                
-                rgbBoss.x += (dx/distance) * rgbBoss.speed;
-                rgbBoss.y += (dy/distance) * rgbBoss.speed;
-
-                const now = Date.now();
-                if(now - rgbBoss.lastShot > 4000) {
-                    rgbBoss.lastShot = now;
-                    const angle = Math.atan2(
-                        player.y + player.size/2 - rgbBoss.y,
-                        player.x + player.size/2 - rgbBoss.x
-                    );
-                    
-                    bullets.push({
-                        x: rgbBoss.x + rgbBoss.width/2,
-                        y: rgbBoss.y + rgbBoss.height/2,
-                        speedX: Math.cos(angle) * 3,
-                        speedY: Math.sin(angle) * 3,
-                        size: 10,
-                        color: '#ff0000',
-                        enemyBullet: true
-                    });
-                }
-
-                if(checkCollision(player, rgbBoss)) {
-                    player.health -= 2;
-                    healthSpan.textContent = Math.floor(player.health);
-                }
-            }
-
-            if(killCount >= 250 && !rgbBoss) {
-                spawnRgbBoss();
-            }
-
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             drawPlayer();
             enemies.forEach(drawEnemy);
             if(boss) drawBoss();
-            if(rgbBoss) drawRgbBoss();
             
             ctx.fillStyle = 'black';
             bullets.forEach(bullet => {
-                ctx.fillStyle = bullet.color || 'black';
-                ctx.fillRect(bullet.x, bullet.y, bullet.size, bullet.size);
+                ctx.fillRect(bullet.x, bullet.y, 5, 5);
             });
             
             items.forEach(item => {
@@ -749,13 +448,6 @@
                 ctx.arc(item.x + 15, item.y + 15, 15, 0, Math.PI * 2);
                 ctx.fill();
             });
-
-            if(powerupStar) {
-                ctx.fillStyle = 'gold';
-                ctx.beginPath();
-                ctx.arc(powerupStar.x + 15, powerupStar.y + 15, 15, 0, Math.PI * 2);
-                ctx.fill();
-            }
 
             if(player.health <= 0) {
                 cancelAnimationFrame(animationFrame);
@@ -767,9 +459,7 @@
         }
 
         volumeControl.addEventListener('input', (e) => {
-            const volume = parseFloat(e.target.value);
-            backgroundMusic.volume = volume;
-            volumeControl.value = volume.toFixed(1);
+            backgroundMusic.volume = e.target.value;
         });
 
         document.addEventListener('keydown', (e) => {
@@ -780,19 +470,15 @@
                 case 'KeyD': keys.d = true; break;
                 case 'Space': 
                     if(player.ammo > 0) {
-                        if(powerupActive) {
-                            shootTriple();
-                        } else {
-                            player.ammo--;
-                            ammoSpan.textContent = player.ammo;
-                            bullets.push({
-                                x: player.x + player.size/2,
-                                y: player.y + player.size/2,
-                                speedX: Math.cos(player.angle) * 10,
-                                speedY: Math.sin(player.angle) * 10,
-                                size: 5
-                            });
-                        }
+                        player.ammo--;
+                        ammoSpan.textContent = player.ammo;
+                        bullets.push({
+                            x: player.x + player.size/2,
+                            y: player.y + player.size/2,
+                            speedX: Math.cos(player.angle) * 10,
+                            speedY: Math.sin(player.angle) * 10,
+                            size: 5
+                        });
                     }
                     break;
                 case 'KeyE': handlePickup(); break;
@@ -816,44 +502,17 @@
 
         canvas.addEventListener('click', () => {
             if(player.ammo > 0) {
-                if(powerupActive) {
-                    shootTriple();
-                } else {
-                    player.ammo--;
-                    ammoSpan.textContent = player.ammo;
-                    bullets.push({
-                        x: player.x + player.size/2,
-                        y: player.y + player.size/2,
-                        speedX: Math.cos(player.angle) * 10,
-                        speedY: Math.sin(player.angle) * 10,
-                        size: 5
-                    });
-                }
-            }
-        });
-
-        function shootTriple() {
-            if(player.ammo > 0) {
                 player.ammo--;
                 ammoSpan.textContent = player.ammo;
-                
-                const angles = [
-                    player.angle - Math.PI/8,
-                    player.angle,
-                    player.angle + Math.PI/8
-                ];
-                
-                angles.forEach(angle => {
-                    bullets.push({
-                        x: player.x + player.size/2,
-                        y: player.y + player.size/2,
-                        speedX: Math.cos(angle) * 10,
-                        speedY: Math.sin(angle) * 10,
-                        size: 5
-                    });
+                bullets.push({
+                    x: player.x + player.size/2,
+                    y: player.y + player.size/2,
+                    speedX: Math.cos(player.angle) * 10,
+                    speedY: Math.sin(player.angle) * 10,
+                    size: 5
                 });
             }
-        }
+        });
 
         window.addEventListener('resize', () => {
             resizeCanvas();
