@@ -7,19 +7,110 @@
             margin: 0;
             overflow: hidden;
             font-family: 'Arial', sans-serif;
+            background: #1a1a1a;
+            color: white;
         }
 
         #menu {
             position: absolute;
             width: 100%;
             height: 100%;
-            background: linear-gradient(45deg, #1a1a1a, #4a4a4a);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 2;
+        }
+
+        .menu-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255, 105, 180, 0.4);
+            text-align: center;
+            border: 2px solid #ff69b4;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .title {
+            font-size: 3em;
+            margin: 0 0 20px 0;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'Impact', sans-serif;
+        }
+
+        .settings-row {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .difficulty, .music-buttons {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            border: 2px solid #ff69b4;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .difficulty h3, .music-buttons h3 {
+            margin: 0 0 12px 0;
+            color: #ff6b6b;
+            font-size: 1.1em;
+            text-transform: uppercase;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .menu-button {
+            background: #ff9ff3;
+            border: 2px solid #f368e0;
+            color: #2d3436;
+            padding: 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .menu-button.active {
+            background: #ff6b6b;
+            border-color: #ee5253;
             color: white;
+        }
+
+        .menu-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(255, 107, 107, 0.3);
+        }
+
+        .button {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            margin-top: 15px;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
         }
 
         #gameContainer {
@@ -39,24 +130,44 @@
             left: 20px;
             color: white;
             font-size: 24px;
-            text-shadow: 2px 2px 2px black;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #e74c3c;
         }
 
         #killCounter {
             position: fixed;
-            bottom: 20px;
+            bottom: 140px;
             right: 20px;
             color: white;
             font-size: 24px;
-            text-shadow: 2px 2px 2px black;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #3498db;
+        }
+
+        .volume-label {
+            position: fixed;
+            bottom: 115px;
+            right: 20px;
+            color: white;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
         }
 
         #volumeControl {
             position: fixed;
-            bottom: 80px;
+            bottom: 70px;
             right: 20px;
             width: 120px;
-            z-index: 4;
+            z-index: 5;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #e74c3c;
+            border-radius: 10px;
         }
 
         .boss-health {
@@ -65,59 +176,132 @@
             right: 20px;
             color: red;
             font-size: 24px;
-            text-shadow: 2px 2px 2px black;
-            display: none;
-        }
-
-        .button {
-            padding: 15px 30px;
-            font-size: 24px;
-            background: #e74c3c;
-            border: none;
-            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
             border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 20px;
         }
 
-        .button:hover {
-            background: #c0392b;
+        .rboss-health {
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            color: #ff00ff;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
         }
 
-        .title {
-            font-size: 72px;
-            text-shadow: 4px 4px 4px black;
-            margin-bottom: 40px;
+        .cheat-active {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #00ff00;
+            font-size: 24px;
+            text-shadow: 0 0 10px #00ff00;
+            animation: cheatGlow 1s infinite;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #00ff00;
+        }
+
+        @keyframes cheatGlow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse {
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .controls-hint {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 0;
+        }
+
+        #pauseOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        #pauseText {
+            font-size: 96px;
+            color: white;
+            text-shadow: 0 0 20px #ff0000;
+            animation: pulsePause 1s infinite;
+            width: 100%;
+            text-align: center;
+        }
+
+        @keyframes pulsePause {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
         }
 
         #gameOver {
-            display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border-radius: 20px;
             text-align: center;
-            z-index: 3;
+            display: none;
+            z-index: 100;
         }
 
-        .music-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
+        #victoryMenu {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px 60px;
+            border-radius: 25px;
+            text-align: center;
+            display: none;
+            z-index: 200;
+            box-shadow: 0 0 50px rgba(255, 105, 180, 0.6);
+            border: 3px solid #ff69b4;
         }
 
-        .music-button {
-            padding: 10px 20px;
-            background: #3498db;
-            border: none;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
+        #victoryMenu h2 {
+            color: #ff6b6b;
+            font-size: 48px;
+            margin-bottom: 30px;
+        }
+
+        #victoryMenu p {
+            font-size: 24px;
+            color: #2d3436;
+            margin: 15px 0;
         }
     </style>
 </head>
@@ -127,12 +311,31 @@
     </audio>
 
     <div id="menu">
-        <h1 class="title">GTA 6</h1>
-        <button class="button" onclick="startGame()">Играть</button>
-        <div class="music-buttons">
-            <button class="music-button" onclick="changeMusic('mamont.mp3')">Мамонт</button>
-            <button class="music-button" onclick="changeMusic('gta.mp3')">Нига</button>
-            <button class="music-button" onclick="changeMusic('san.mp3')">Сан Андреас</button>
+        <div class="menu-container">
+            <h1 class="title">GTA 6</h1>
+            <div class="record">Рекорд: Убийств: <span id="recordKills">0</span></div>
+            
+            <div class="settings-row">
+                <div class="difficulty">
+                    <h3>СЛОЖНОСТЬ</h3>
+                    <div class="button-group">
+                        <button class="menu-button active" data-difficulty="easy">Лёгкий</button>
+                        <button class="menu-button" data-difficulty="normal">Нормальный</button>
+                        <button class="menu-button" data-difficulty="hard">Киборг</button>
+                    </div>
+                </div>
+                
+                <div class="music-buttons">
+                    <h3>МУЗЫКА</h3>
+                    <div class="button-group">
+                        <button class="menu-button active" data-music="gta.mp3">Нига</button>
+                        <button class="menu-button" data-music="mamont.mp3">В диапазоне</button>
+                        <button class="menu-button" data-music="san.mp3">Сан андреас</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="button" onclick="startGame()">ИГРАТЬ</button>
         </div>
     </div>
 
@@ -143,12 +346,29 @@
             Патроны: <span id="ammo">20</span>
         </div>
         <div class="boss-health" id="bossHealth">Босс: <span id="bossHp">40</span></div>
+        <div class="rboss-health" id="rbossHealth">RGB Босс: <span id="rbossHp">100</span></div>
         <div id="killCounter">Убийств: 0<br>Боссов: 0</div>
+        <div class="controls-hint">
+            Стрельба: Пробел / ЛКМ | Взаимодействие: E | Движение: WASD
+        </div>
+        <div class="volume-label">Громкость:</div>
         <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="0.2">
         <div id="gameOver">
             <h2>GAME OVER</h2>
             <button class="button" onclick="backToMenu()">Меню</button>
         </div>
+    </div>
+
+    <div id="pauseOverlay">
+        <div id="pauseText">ПАУЗА</div>
+    </div>
+
+    <div id="victoryMenu">
+        <h2>ПОБЕДА!</h2>
+        <p>Время прохождения: <span id="victoryTime">0:00</span></p>
+        <p>Выстрелов: <span id="victoryShots">0</span></p>
+        <p>Уровень сложности: <span id="victoryDifficulty">Лёгкий</span></p>
+        <button class="button" onclick="backToMenu()">Меню</button>
     </div>
 
     <script>
@@ -164,19 +384,62 @@
         const volumeControl = document.getElementById('volumeControl');
         const bossHealthDiv = document.getElementById('bossHealth');
         const bossHpSpan = document.getElementById('bossHp');
+        const rbossHealthDiv = document.getElementById('rbossHealth');
+        const rbossHpSpan = document.getElementById('rbossHp');
+        const recordKills = document.getElementById('recordKills');
+        const pauseOverlay = document.getElementById('pauseOverlay');
+        const pauseText = document.getElementById('pauseText');
+        const victoryMenu = document.getElementById('victoryMenu');
         
         let animationFrame;
         let killCount = 0;
         let bossesKilled = 0;
         let boss = null;
         let bossSpawned = false;
+        let tripleShotActive = false;
+        let rgbBoss = null;
+        let difficulty = 'easy';
+        let recordKillsCount = 0;
+        let bossDefeated = false;
+        let godMode = false;
+        let lastTime = 0;
+        let isPaused = false;
+        let rgbBossDefeated = false;
+        let cheatToggle = false;
+        let superShotActive = false;
+        let startTime = 0;
+        let shotsFired = 0;
+
+        const cheatActiveElement = document.createElement('div');
+        cheatActiveElement.className = 'cheat-active';
+        cheatActiveElement.textContent = 'Читы включены!';
+        cheatActiveElement.style.display = 'none';
+        document.body.appendChild(cheatActiveElement);
+
+        // Инициализация выбора сложности
+        document.querySelectorAll('.menu-button[data-difficulty]').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.menu-button[data-difficulty]').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                difficulty = this.dataset.difficulty;
+            });
+        });
+
+        // Инициализация выбора музыки
+        document.querySelectorAll('.menu-button[data-music]').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.menu-button[data-music]').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                changeMusic(this.dataset.music, this);
+            });
+        });
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
 
-        function changeMusic(song) {
+        function changeMusic(song, button) {
             backgroundMusic.pause();
             backgroundMusic.src = song;
             backgroundMusic.load();
@@ -189,18 +452,70 @@
             menu.style.display = 'none';
             gameContainer.style.display = 'block';
             gameOverDiv.style.display = 'none';
+            victoryMenu.style.display = 'none';
             resizeCanvas();
             initGame();
             backgroundMusic.play();
+            lastTime = performance.now();
+            startTime = Date.now();
+            shotsFired = 0;
             gameLoop();
         }
 
         function backToMenu() {
             gameContainer.style.display = 'none';
+            victoryMenu.style.display = 'none';
             menu.style.display = 'flex';
             cancelAnimationFrame(animationFrame);
             backgroundMusic.pause();
+            updateRecords();
         }
+
+        function updateRecords() {
+            if (killCount > recordKillsCount) {
+                recordKillsCount = killCount;
+                recordKills.textContent = recordKillsCount;
+            }
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            if(isPaused) {
+                pauseOverlay.style.display = 'flex';
+                pauseText.innerHTML = `ПАУЗА<br>Уровень сложности: ${difficulty}`;
+                cancelAnimationFrame(animationFrame);
+                backgroundMusic.pause();
+            } else {
+                pauseOverlay.style.display = 'none';
+                backgroundMusic.play();
+                lastTime = performance.now();
+                gameLoop();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if(e.code === 'Escape') {
+                togglePause();
+            }
+            if(e.code === 'KeyF') keys.f = true;
+            if(e.code === 'KeyW') keys.w = true;
+            
+            if(keys.w && keys.f && !cheatToggle) {
+                cheatToggle = true;
+                godMode = !godMode;
+                cheatActiveElement.style.display = godMode ? 'block' : 'none';
+                if(godMode) {
+                    player.health = 100;
+                    healthSpan.textContent = player.health;
+                }
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if(e.code === 'KeyF') keys.f = false;
+            if(e.code === 'KeyW') keys.w = false;
+            cheatToggle = false;
+        });
 
         function initGame() {
             player = {
@@ -223,12 +538,20 @@
             bossesKilled = 0;
             boss = null;
             bossSpawned = false;
+            tripleShotActive = false;
+            rgbBoss = null;
+            bossDefeated = false;
+            godMode = false;
+            rgbBossDefeated = false;
+            superShotActive = false;
             
             killCounter.innerHTML = `Убийств: ${killCount}<br>Боссов: ${bossesKilled}`;
             bossHealthDiv.style.display = 'none';
+            rbossHealthDiv.style.display = 'none';
             
-            for(let i = 0; i < 7; i++) spawnEnemy();
-            for(let i = 0; i < 5; i++) spawnItem();
+            let enemyCount = difficulty === 'easy' ? 3 : difficulty === 'normal' ? 7 : 10;
+            for(let i = 0; i < enemyCount; i++) spawnEnemy();
+            for(let i = 0; i < (difficulty === 'easy' ? 10 : 5); i++) spawnItem();
         }
 
         function spawnEnemy() {
@@ -238,7 +561,9 @@
                 size: 35,
                 speed: 1.5,
                 health: 100,
-                angle: 0
+                angle: 0,
+                surroundDirection: Math.random() < 0.5 ? 1 : -1,
+                lastDirectionChange: Date.now()
             });
         }
 
@@ -254,6 +579,40 @@
             };
             bossHpSpan.textContent = boss.health;
             bossHealthDiv.style.display = 'block';
+        }
+
+        function spawnRGBBoss() {
+            if (rgbBossDefeated) return;
+
+            rgbBoss = {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: 175,
+                speed: 0.5,
+                health: 100,
+                angle: 0,
+                lastShot: Date.now()
+            };
+            rbossHpSpan.textContent = rgbBoss.health;
+            rbossHealthDiv.style.display = 'block';
+        }
+
+        function spawnTripleShotItem() {
+            items.push({
+                x: Math.random() * (canvas.width - 30),
+                y: Math.random() * (canvas.height - 30),
+                type: 'tripleShot',
+                blink: true
+            });
+        }
+
+        function spawnSuperShotItem() {
+            items.push({
+                x: Math.random() * (canvas.width - 30),
+                y: Math.random() * (canvas.height - 30),
+                type: 'superShot',
+                blink: true
+            });
         }
 
         function spawnItem() {
@@ -275,16 +634,19 @@
             items.forEach((item, index) => {
                 const dx = item.x - player.x;
                 const dy = item.y - player.y;
-                const distance = Math.sqrt(dx*dx + dy*dy);
-                
-                if(distance < player.pickupRadius) {
-                    if(item.type === 'health') {
-                        player.health = Math.min(100, player.health + 30);
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < player.pickupRadius) {
+                    if (item.type === 'health') {
+                        player.health = Math.min(100, player.health + (difficulty === 'easy' ? 60 : 30));
                         healthSpan.textContent = player.health;
-                    }
-                    else if(item.type === 'ammo') {
-                        player.ammo += 15;
+                    } else if (item.type === 'ammo') {
+                        player.ammo += (difficulty === 'easy' ? 30 : 15);
                         ammoSpan.textContent = player.ammo;
+                    } else if (item.type === 'tripleShot') {
+                        tripleShotActive = true;
+                    } else if (item.type === 'superShot') {
+                        superShotActive = true;
                     }
                     items.splice(index, 1);
                     spawnItem();
@@ -292,170 +654,398 @@
             });
         }
 
+        function activateSuperShot() {
+            if (superShotActive && Math.random() < 0.15) {
+                for (let i = 0; i < 45; i++) {
+                    const angle = (i / 45) * Math.PI * 2;
+                    bullets.push({
+                        x: player.x + player.size / 2,
+                        y: player.y + player.size / 2,
+                        speedX: Math.cos(angle) * 10,
+                        speedY: Math.sin(angle) * 10,
+                        size: 5
+                    });
+                }
+            }
+        }
+
+        function updateEnemyAI(enemy) {
+            const dx = player.x - enemy.x;
+            const dy = player.y - enemy.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (difficulty === 'hard') {
+                // Предсказание движения игрока
+                const playerSpeed = player.speed;
+                const playerAngle = player.angle;
+
+                // Предсказываем будущую позицию игрока
+                const predictDistance = distance * 0.2; // Коэффициент предсказания
+                const predictedX = player.x + Math.cos(playerAngle) * predictDistance;
+                const predictedY = player.y + Math.sin(playerAngle) * predictDistance;
+
+                // Вектор к предсказанной позиции
+                const predictDx = predictedX - enemy.x;
+                const predictDy = predictedY - enemy.y;
+                const predictDistanceTotal = Math.sqrt(predictDx * predictDx + predictDy * predictDy);
+
+                // Угол к предсказанной позиции
+                const targetAngle = Math.atan2(predictDy, predictDx);
+
+                // Плавное изменение угла
+                const angleDiff = targetAngle - enemy.angle;
+                enemy.angle += angleDiff * 0.1;
+
+                // Движение к предсказанной позиции
+                enemy.x += Math.cos(enemy.angle) * enemy.speed;
+                enemy.y += Math.sin(enemy.angle) * enemy.speed;
+
+                // Избегание столкновений с другими врагами
+                enemies.forEach(other => {
+                    if (other !== enemy) {
+                        const ex = other.x - enemy.x;
+                        const ey = other.y - enemy.y;
+                        const edist = Math.sqrt(ex * ex + ey * ey);
+
+                        if (edist < 50) {
+                            enemy.x -= ex / edist * 0.5;
+                            enemy.y -= ey / edist * 0.5;
+                        }
+                    }
+                });
+            } else {
+                // Обычное поведение для других уровней сложности
+                enemy.angle = Math.atan2(dy, dx);
+                enemy.x += Math.cos(enemy.angle) * enemy.speed;
+                enemy.y += Math.sin(enemy.angle) * enemy.speed;
+            }
+        }
+
         function drawPlayer() {
             ctx.save();
-            ctx.translate(player.x + player.size/2, player.y + player.size/2);
+            ctx.translate(player.x + player.size / 2, player.y + player.size / 2);
             ctx.rotate(player.angle);
-            
+
             ctx.fillStyle = '#3498db';
             ctx.beginPath();
-            ctx.arc(0, 0, player.size/2, 0, Math.PI * 2);
+            ctx.arc(0, 0, player.size / 2, 0, Math.PI * 2);
             ctx.fill();
-            
+
             ctx.fillStyle = '#2c3e50';
-            ctx.fillRect(player.size/4, -3, player.size/2, 6);
-            
+            ctx.fillRect(player.size / 4, -3, player.size / 2, 6);
+
             ctx.restore();
         }
 
         function drawEnemy(enemy) {
             ctx.save();
-            ctx.translate(enemy.x + enemy.size/2, enemy.y + enemy.size/2);
+            ctx.translate(enemy.x + enemy.size / 2, enemy.y + enemy.size / 2);
             ctx.rotate(enemy.angle);
-            
+
             ctx.fillStyle = '#e74c3c';
             ctx.beginPath();
-            ctx.arc(0, 0, enemy.size/2, 0, Math.PI * 2);
+            ctx.arc(0, 0, enemy.size / 2, 0, Math.PI * 2);
             ctx.fill();
-            
+
             ctx.fillStyle = '#c0392b';
             ctx.beginPath();
-            ctx.moveTo(enemy.size/2, 0);
-            ctx.lineTo(-enemy.size/4, -enemy.size/4);
-            ctx.lineTo(-enemy.size/4, enemy.size/4);
+            ctx.moveTo(enemy.size / 2, 0);
+            ctx.lineTo(-enemy.size / 4, -enemy.size / 4);
+            ctx.lineTo(-enemy.size / 4, enemy.size / 4);
             ctx.closePath();
             ctx.fill();
-            
+
             ctx.restore();
         }
 
         function drawBoss() {
             ctx.save();
-            ctx.translate(boss.x + boss.size/2, boss.y + boss.size/2);
+            ctx.translate(boss.x + boss.size / 2, boss.y + boss.size / 2);
             ctx.rotate(boss.angle);
-            
+
             ctx.fillStyle = '#ff0000';
             ctx.beginPath();
-            ctx.moveTo(0, -boss.size/2);
-            ctx.lineTo(boss.size/2, boss.size/2);
-            ctx.lineTo(-boss.size/2, boss.size/2);
+            ctx.moveTo(0, -boss.size / 2);
+            ctx.lineTo(boss.size / 2, boss.size / 2);
+            ctx.lineTo(-boss.size / 2, boss.size / 2);
             ctx.closePath();
             ctx.fill();
-            
+
+            ctx.restore();
+        }
+
+        function drawRGBBoss() {
+            ctx.save();
+            ctx.translate(rgbBoss.x + rgbBoss.size / 2, rgbBoss.y + rgbBoss.size / 2);
+            ctx.rotate(rgbBoss.angle);
+
+            ctx.fillStyle = '#ff00ff';
+            ctx.fillRect(-rgbBoss.size / 2, -rgbBoss.size / 2, rgbBoss.size, rgbBoss.size);
+
+            ctx.restore();
+        }
+
+        function drawTripleShotItem(item) {
+            ctx.save();
+            ctx.translate(item.x + 15, item.y + 15);
+            ctx.fillStyle = '#9b59b6';
+            if (item.blink) {
+                ctx.globalAlpha = Math.sin(Date.now() / 200) * 0.5 + 0.5;
+            }
+            ctx.fillRect(-15, -15, 30, 30);
+            ctx.restore();
+        }
+
+        function drawSuperShotItem(item) {
+            ctx.save();
+            ctx.translate(item.x + 15, item.y + 15);
+
+            const gradient = ctx.createLinearGradient(-15, -15, 30, 30);
+            gradient.addColorStop(0, '#ff0000');
+            gradient.addColorStop(0.2, '#ff9900');
+            gradient.addColorStop(0.4, '#ffff00');
+            gradient.addColorStop(0.6, '#33ff00');
+            gradient.addColorStop(0.8, '#0099ff');
+            gradient.addColorStop(1, '#6633ff');
+
+            ctx.fillStyle = gradient;
+
+            if (item.blink) {
+                ctx.globalAlpha = Math.sin(Date.now() / 200) * 0.5 + 0.5;
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(0, -15);
+            ctx.lineTo(30, 0);
+            ctx.lineTo(0, 15);
+            ctx.closePath();
+            ctx.fill();
             ctx.restore();
         }
 
         function gameLoop() {
+            if (isPaused) return;
+
+            const currentTime = performance.now();
+            const deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
+
             const newX = player.x + (keys.d ? player.speed : 0) - (keys.a ? player.speed : 0);
             const newY = player.y + (keys.s ? player.speed : 0) - (keys.w ? player.speed : 0);
-            
+
             player.x = Math.max(0, Math.min(canvas.width - player.size, newX));
             player.y = Math.max(0, Math.min(canvas.height - player.size, newY));
 
-            const dx = mouse.x - (player.x + player.size/2);
-            const dy = mouse.y - (player.y + player.size/2);
+            const dx = mouse.x - (player.x + player.size / 2);
+            const dy = mouse.y - (player.y + player.size / 2);
             player.angle = Math.atan2(dy, dx);
 
             bullets.forEach((bullet, index) => {
                 bullet.x += bullet.speedX;
                 bullet.y += bullet.speedY;
-                
-                if(bullet.x < 0 || bullet.x > canvas.width || 
-                   bullet.y < 0 || bullet.y > canvas.height) {
+
+                if (bullet.x < 0 || bullet.x > canvas.width ||
+                    bullet.y < 0 || bullet.y > canvas.height) {
                     bullets.splice(index, 1);
                     return;
                 }
-                
+
                 enemies.forEach((enemy, enemyIndex) => {
-                    if(checkCollision(bullet, enemy)) {
+                    if (checkCollision(bullet, enemy)) {
                         enemies.splice(enemyIndex, 1);
                         bullets.splice(index, 1);
-                        
+
                         killCount++;
                         killCounter.innerHTML = `Убийств: ${killCount}<br>Боссов: ${bossesKilled}`;
-                        
-                        if(killCount % 20 === 0) {
+
+                        if (killCount % (difficulty === 'easy' ? 40 : difficulty === 'normal' ? 25 : 20) === 0) {
                             spawnEnemy();
                         }
-                        
+
                         spawnEnemy();
                     }
                 });
 
-                if(boss && checkCollision(bullet, boss)) {
+                if (boss && checkCollision(bullet, boss)) {
                     bullets.splice(index, 1);
                     boss.health--;
                     bossHpSpan.textContent = boss.health;
-                    
-                    if(boss.health <= 0) {
+
+                    if (boss.health <= 0) {
                         bossesKilled++;
                         boss = null;
                         bossSpawned = false;
+                        bossDefeated = true;
                         bossHealthDiv.style.display = 'none';
                         killCounter.innerHTML = `Убийств: ${killCount}<br>Боссов: ${bossesKilled}`;
+                        spawnTripleShotItem();
+                    }
+                }
+
+                if (rgbBoss && checkCollision(bullet, rgbBoss)) {
+                    bullets.splice(index, 1);
+                    rgbBoss.health--;
+                    rbossHpSpan.textContent = rgbBoss.health;
+
+                    if (rgbBoss.health <= 0) {
+                        bossesKilled++;
+                        rgbBossDefeated = true;
+                        rgbBoss = null;
+                        rbossHealthDiv.style.display = 'none';
+                        killCounter.innerHTML = `Убийств: ${killCount}<br>Боссов: ${bossesKilled}`;
+                        spawnSuperShotItem();
                     }
                 }
             });
 
             enemies.forEach(enemy => {
-                const dx = player.x - enemy.x;
-                const dy = player.y - enemy.y;
-                const distance = Math.sqrt(dx*dx + dy*dy);
+                updateEnemyAI(enemy);
                 
-                enemy.angle = Math.atan2(dy, dx);
-                enemy.x += (dx/distance) * enemy.speed;
-                enemy.y += (dy/distance) * enemy.speed;
-
-                if(checkCollision(player, enemy)) {
-                    player.health -= 0.5;
+                if (checkCollision(player, enemy)) {
+                    if (!godMode) player.health -= 0.5;
                     healthSpan.textContent = Math.floor(player.health);
                 }
             });
 
-            if(killCount >= 50 && !boss && !bossSpawned) {
+            if (killCount >= 50 && !boss && !bossSpawned && !bossDefeated) {
                 spawnBoss();
             }
 
-            if(boss) {
+            if (killCount >= 250 && !rgbBoss && !rgbBossDefeated) {
+                spawnRGBBoss();
+            }
+
+            if (boss) {
                 const dx = player.x - boss.x;
                 const dy = player.y - boss.y;
-                const distance = Math.sqrt(dx*dx + dy*dy);
-                
-                boss.angle = Math.atan2(dy, dx);
-                boss.x += (dx/distance) * boss.speed;
-                boss.y += (dy/distance) * boss.speed;
+                const distance = Math.sqrt(dx * dx + dy * dy);
 
-                if(checkCollision(player, boss)) {
-                    player.health -= 1.5;
+                boss.angle = Math.atan2(dy, dx);
+                boss.x += (dx / distance) * boss.speed;
+                boss.y += (dy / distance) * boss.speed;
+
+                if (checkCollision(player, boss)) {
+                    if (!godMode) player.health -= 1.5;
                     healthSpan.textContent = Math.floor(player.health);
                 }
             }
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            drawPlayer();
-            enemies.forEach(drawEnemy);
-            if(boss) drawBoss();
-            
-            ctx.fillStyle = 'black';
-            bullets.forEach(bullet => {
-                ctx.fillRect(bullet.x, bullet.y, 5, 5);
-            });
-            
-            items.forEach(item => {
-                ctx.fillStyle = item.type === 'health' ? '#2ecc71' : '#f1c40f';
-                ctx.beginPath();
-                ctx.arc(item.x + 15, item.y + 15, 15, 0, Math.PI * 2);
-                ctx.fill();
+            if (rgbBoss) {
+                const dx = player.x - rgbBoss.x;
+                const dy = player.y - rgbBoss.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                rgbBoss.angle = Math.atan2(dy, dx);
+                rgbBoss.x += (dx / distance) * rgbBoss.speed;
+                rgbBoss.y += (dy / distance) * rgbBoss.speed;
+
+                if (Date.now() - rgbBoss.lastShot > 4000) {
+                    bullets.push({
+                        x: rgbBoss.x + rgbBoss.size / 2,
+                        y: rgbBoss.y + rgbBoss.size / 2,
+                        speedX: Math.cos(rgbBoss.angle) * 7,
+                        speedY: Math.sin(rgbBoss.angle) * 7,
+                        size: 8,
+                        isBossBullet: true,
+                        damage: 10
+                    });
+                    rgbBoss.lastShot = Date.now();
+                }
+
+                if (checkCollision(player, rgbBoss)) {
+                    if (!godMode) player.health -= 2;
+                    healthSpan.textContent = Math.floor(player.health);
+                }
+            }
+
+            bullets.forEach((bullet, index) => {
+                if (bullet.isBossBullet && checkCollision(bullet, player)) {
+                    if (!godMode) player.health -= bullet.damage;
+                    healthSpan.textContent = Math.floor(player.health);
+                    bullets.splice(index, 1);
+                }
             });
 
-            if(player.health <= 0) {
+            if (keys.w && keys.f && !cheatToggle) {
+                cheatToggle = true;
+                godMode = !godMode;
+                cheatActiveElement.style.display = godMode ? 'block' : 'none';
+                if (godMode) {
+                    player.health = 100;
+                    healthSpan.textContent = player.health;
+                }
+            }
+
+            if (player.ammo < 10) {
+                ammoSpan.classList.add('blink');
+            } else {
+                ammoSpan.classList.remove('blink');
+            }
+
+            if (player.health < 20) {
+                healthSpan.classList.add('pulse');
+            } else {
+                healthSpan.classList.remove('pulse');
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            items.forEach(item => {
+                if (item.type === 'tripleShot') {
+                    drawTripleShotItem(item);
+                } else if (item.type === 'superShot') {
+                    drawSuperShotItem(item);
+                } else {
+                    ctx.fillStyle = item.type === 'health' ? '#2ecc71' : '#f1c40f';
+                    ctx.beginPath();
+                    ctx.arc(item.x + 15, item.y + 15, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+
+            drawPlayer();
+            enemies.forEach(drawEnemy);
+            if (boss) drawBoss();
+            if (rgbBoss) drawRGBBoss();
+
+            bullets.forEach(bullet => {
+                if (bullet.isBossBullet) {
+                    ctx.fillStyle = '#ff0000';
+                    ctx.beginPath();
+                    ctx.arc(bullet.x, bullet.y, bullet.size, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    ctx.fillStyle = 'black';
+                    ctx.fillRect(bullet.x, bullet.y, 5, 5);
+                }
+            });
+
+            if (player.health <= 0) {
                 cancelAnimationFrame(animationFrame);
                 gameOverDiv.style.display = 'block';
                 backgroundMusic.pause();
+                updateRecords();
+            } else if (killCount >= 800) {
+                showVictoryMenu();
             } else {
                 animationFrame = requestAnimationFrame(gameLoop);
             }
+        }
+
+        function showVictoryMenu() {
+            cancelAnimationFrame(animationFrame);
+            gameContainer.style.display = 'none';
+            victoryMenu.style.display = 'block';
+            
+            const time = Math.floor((Date.now() - startTime) / 1000);
+            document.getElementById('victoryTime').textContent = 
+                `${Math.floor(time/60)}:${(time%60).toString().padStart(2,'0')}`;
+            
+            document.getElementById('victoryShots').textContent = shotsFired;
+            document.getElementById('victoryDifficulty').textContent = 
+                difficulty === 'easy' ? 'Лёгкий' : difficulty === 'normal' ? 'Нормальный' : 'Киборг';
+            
+            updateRecords();
         }
 
         volumeControl.addEventListener('input', (e) => {
@@ -463,25 +1053,43 @@
         });
 
         document.addEventListener('keydown', (e) => {
-            switch(e.code) {
+            if (isPaused) return;
+
+            switch (e.code) {
                 case 'KeyW': keys.w = true; break;
                 case 'KeyA': keys.a = true; break;
                 case 'KeyS': keys.s = true; break;
                 case 'KeyD': keys.d = true; break;
-                case 'Space': 
-                    if(player.ammo > 0) {
-                        player.ammo--;
+                case 'Space':
+                    if (player?.ammo > 0) {
+                        if (tripleShotActive) {
+                            for (let i = -1; i <= 1; i++) {
+                                bullets.push({
+                                    x: player.x + player.size / 2,
+                                    y: player.y + player.size / 2,
+                                    speedX: Math.cos(player.angle + i * 0.2) * 10,
+                                    speedY: Math.sin(player.angle + i * 0.2) * 10,
+                                    size: 5
+                                });
+                            }
+                            player.ammo--;
+                        } else {
+                            bullets.push({
+                                x: player.x + player.size / 2,
+                                y: player.y + player.size / 2,
+                                speedX: Math.cos(player.angle) * 10,
+                                speedY: Math.sin(player.angle) * 10,
+                                size: 5
+                            });
+                            player.ammo--;
+                        }
                         ammoSpan.textContent = player.ammo;
-                        bullets.push({
-                            x: player.x + player.size/2,
-                            y: player.y + player.size/2,
-                            speedX: Math.cos(player.angle) * 10,
-                            speedY: Math.sin(player.angle) * 10,
-                            size: 5
-                        });
+                        shotsFired++;
+                        activateSuperShot();
                     }
                     break;
                 case 'KeyE': handlePickup(); break;
+                case 'KeyF': keys.f = true; break;
             }
         });
 
@@ -491,6 +1099,7 @@
                 case 'KeyA': keys.a = false; break;
                 case 'KeyS': keys.s = false; break;
                 case 'KeyD': keys.d = false; break;
+                case 'KeyF': keys.f = false; break;
             }
         });
 
@@ -501,16 +1110,33 @@
         });
 
         canvas.addEventListener('click', () => {
-            if(player.ammo > 0) {
-                player.ammo--;
+            if(isPaused) return;
+
+            if(player?.ammo > 0) {
+                if(tripleShotActive) {
+                    for(let i = -1; i <= 1; i++) {
+                        bullets.push({
+                            x: player.x + player.size/2,
+                            y: player.y + player.size/2,
+                            speedX: Math.cos(player.angle + i * 0.2) * 10,
+                            speedY: Math.sin(player.angle + i * 0.2) * 10,
+                            size: 5
+                        });
+                    }
+                    player.ammo--;
+                } else {
+                    bullets.push({
+                        x: player.x + player.size/2,
+                        y: player.y + player.size/2,
+                        speedX: Math.cos(player.angle) * 10,
+                        speedY: Math.sin(player.angle) * 10,
+                        size: 5
+                    });
+                    player.ammo--;
+                }
                 ammoSpan.textContent = player.ammo;
-                bullets.push({
-                    x: player.x + player.size/2,
-                    y: player.y + player.size/2,
-                    speedX: Math.cos(player.angle) * 10,
-                    speedY: Math.sin(player.angle) * 10,
-                    size: 5
-                });
+                shotsFired++;
+                activateSuperShot();
             }
         });
 
